@@ -1,0 +1,4 @@
+OTPPurposeId,OTPPurpose
+1,Authentication
+2,Forget Password
+3,Account Modification

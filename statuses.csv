@@ -1,0 +1,9 @@
+StatusId,StatusValue
+1,Admin
+2,Customer
+3,Expired
+4,Active
+5,Declined
+6,Succuess
+7,Pending
+8,Error

@@ -1,0 +1,10 @@
+PaymentTypeId,PaymentFrom,PaymentTo,PaymentType
+1,M,B,False
+2,W,B,False
+3,B,M,False
+4,W,B,False
+5,M,B,False
+6,B,M,False
+7,W,M,True
+8,B,W,True
+9,B,W,True

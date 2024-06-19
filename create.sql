@@ -1,0 +1,105 @@
+CREATE TABLE Status (
+    StatusId SERIAL PRIMARY KEY,
+    StatusValue VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE "User" (
+    UserId SERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) UNIQUE NOT NULL,
+    MobileNumber VARCHAR(10) UNIQUE NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Password VARCHAR(300) NOT NULL,
+    StatusId SMALLINT REFERENCES Status(StatusId) NOT NULL,
+    CreatedTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    ModifiedTimestamp TIMESTAMP
+);
+
+CREATE TABLE Bank (
+    BankId SMALLSERIAL PRIMARY KEY,
+    BankName VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE UserCard (
+    UserCardMappingId SERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) NOT NULL REFERENCES "User"(EmailId),
+    CardNumber VARCHAR(16) NOT NULL,
+    BankId SMALLINT NOT NULL REFERENCES Bank(BankId),
+    ExpiryDate TIMESTAMP NOT NULL,
+    StatusId SMALLINT NOT NULL,
+    CreatedTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    ModifiedTimestamp TIMESTAMP,
+    CONSTRAINT unq_Email_Card UNIQUE(EmailId, CardNumber)
+);
+
+CREATE TABLE Merchant (
+    MerchantId SMALLSERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) UNIQUE NOT NULL,
+    Name VARCHAR(100) NOT NULL,
+    Password BYTEA NOT NULL,
+    MobileNumber VARCHAR(10),
+    IsActive BOOLEAN DEFAULT TRUE NOT NULL,
+    CreatedTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    ModifiedTimestamp TIMESTAMP
+);
+
+CREATE TABLE MerchantServiceType (
+    ServiceId SERIAL PRIMARY KEY,
+    ServiceType VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE MerchantServiceMapping (
+    MerchantServiceMappingId SMALLSERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) REFERENCES Merchant(EmailId) NOT NULL,
+    ServiceId INTEGER REFERENCES MerchantServiceType(ServiceId) NOT NULL,
+    DiscountPercent DECIMAL(5,2) DEFAULT 0 NOT NULL,
+    IsActive BOOLEAN DEFAULT TRUE NOT NULL,
+    CreatedTimestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ModifiedTimestamp TIMESTAMP,
+    CONSTRAINT unq_EmailId_ServiceId UNIQUE (EmailId, ServiceId)
+);
+
+CREATE TABLE PaymentType (
+    PaymentTypeId SERIAL PRIMARY KEY,
+    PaymentFrom CHAR(1) CHECK(PaymentFrom IN ('B','M','W')) NOT NULL,
+    PaymentTo CHAR(1) CHECK(PaymentTo IN ('B','M','W')) NOT NULL,
+    PaymentType BOOLEAN NOT NULL
+);
+
+CREATE TABLE UserTransaction (
+    UserTransactionId BIGSERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) REFERENCES "User"(EmailId) NOT NULL,
+    Amount MONEY  NOT NULL,
+    TransactionDateTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PaymentTypeId SMALLINT REFERENCES PaymentType(PaymentTypeId) NOT NULL,
+    Remarks VARCHAR(50),
+    Info VARCHAR(100) NOT NULL,
+    StatusId SMALLINT REFERENCES Status(StatusId) NOT NULL,
+    PointsEarned SMALLINT CHECK(PointsEarned>=0) DEFAULT 0 NOT NULL,
+    IsRedeemed BOOLEAN DEFAULT FALSE NOT NULL
+);
+
+CREATE TABLE MerchantTransactions (
+    TransactionId BIGSERIAL PRIMARY KEY,
+    EmailId VARCHAR(255) REFERENCES Merchant(EmailId) NOT NULL,
+    Amount MONEY  NOT NULL,
+    TransactionDateTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    PaymentTypeId SMALLINT REFERENCES PaymentType(PaymentTypeId) NOT NULL,
+    Remarks VARCHAR(50),
+    Info VARCHAR(100) NOT NULL,
+    StatusId SMALLINT REFERENCES Status(StatusId) NOT NULL
+);
+
+CREATE TABLE OTPPurpose (
+    OTPPurposeId SMALLSERIAL PRIMARY KEY,
+    OTPPurpose VARCHAR(30) UNIQUE NOT NULL
+);
+
+CREATE TABLE OTP (
+    OTPId SERIAL PRIMARY KEY,
+    OTP VARCHAR(6) DEFAULT CURRENT_TIMESTAMP + INTERVAL '5 minutes' NOT NULL,
+    ReferenceId VARCHAR(255) NOT NULL,
+    ExpiryDateTime TIMESTAMP NOT NULL,
+    OTPPurposeId SMALLINT REFERENCES OTPPurpose(OTPPurposeId) NOT NULL,
+    IsValid BOOLEAN DEFAULT TRUE NOT NULL,
+    CONSTRAINT uq_OTP_ExpiryDateTime UNIQUE (OTP, ReferenceId, ExpiryDateTime)
+);
