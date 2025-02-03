@@ -1,2 +1,2 @@
-[View Report](DMQL/Report.pdf)
+[View Report](Report.pdf)
 
